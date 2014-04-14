@@ -1,0 +1,8 @@
+*.csv
+monthly/
+annual/
+*#
+*~
+*.7z
+
+*.py[co]
