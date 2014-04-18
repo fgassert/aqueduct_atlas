@@ -13,7 +13,7 @@ INMXD = "empty.mxd"
 OUTMXD = "aqueduct_projections.mxd"
 LYR = "projections_symbology.lyr"
 MASKLYR = "mask_symbology.lyr"
-SHP = "inputs.gdb/Basins_15006"
+SHP = "shps/projection_data_20140416.shp"
 OUTSHP = "aqueduct_projections"
 
 II = ['ws','sv','ut','bt']
