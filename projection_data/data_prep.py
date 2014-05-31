@@ -4,8 +4,8 @@ import numpy as np
 import sys, os
 import fiona_join
 
-SHP = "Basins_15006-20130820.shp"
-OUTSHP = "projection_data_20140416.shp"
+SHP = "shps/Basins_15006-20130820.shp"
+OUTSHP = "shps/projection_data_20140416.shp"
 DUMPCSV = "prepped.csv"
 
 BA = "Ba-20140303.csv"
@@ -33,6 +33,8 @@ LARGE_NUMBER = 1e16
 NROWS = 15006
 BASINID = "BasinID"
 NODATA = "nan"
+CHANGECATEGORIES=7
+
 
 __csvs = {}
 def DF(fname):
@@ -60,14 +62,14 @@ def wstcalc(s,y):
     return raw,labels
 def wsccalc(s,y):
     raw = DF(BA)["WWR_ch_%s_%s" % (csvYY[y],csvSS[s])]
-    t = get_change_thresholds(9,2,rate=.5)
+    t = get_change_thresholds(CHANGECATEGORIES,2,rate=.5)
     score = threshold_score(raw,t)
     mask = (((DF(BA)["WWR_%s_%s" % (csvYY[y],csvSS[s])] <= .1) &
              (raw > 0)) |
             ((DF(BA)["WWR_%s_%s" % (csvYY[y],csvSS[s])] > .8) &
              (raw < 0)))
-    score[np.asarray(mask)] = 4
-    score[np.isnan(np.asarray(raw))] = 9
+    score[np.asarray(mask)] = CHANGECATEGORIES//2
+    score[np.isnan(np.asarray(raw))] = CHANGECATEGORIES
     labels = DF(LABELS)['wsc'][score]
     return raw,labels
 def wsucalc(s,y):
@@ -83,9 +85,9 @@ def uttcalc(s,y):
     return raw,labels
 def utccalc(s,y):
     raw = DF(BA)["Ut_ch_%s_%s" % (csvYY[y],csvSS[s])]
-    t = get_change_thresholds(rate=.25)
+    t = get_change_thresholds(CHANGECATEGORIES,rate=.25)
     score = threshold_score(raw, t)
-    score[np.isnan(np.asarray(raw))] = 9
+    score[np.isnan(np.asarray(raw))] = CHANGECATEGORIES
     labels = DF(LABELS)['utc'][score]
     return raw,labels
 def utucalc(s,y):
@@ -95,16 +97,16 @@ def utucalc(s,y):
 
 def bttcalc(s,y):
     raw = DF(BTm[s])[csvYY[y]]/DF(AREA)[AREAM2]
-    t = get_log_thresholds(9,np.sqrt(10),.01)
+    t = get_log_thresholds(8,np.sqrt(10),.01)
     score = threshold_score(raw, t)
     labels = DF(LABELS)['btt'][score]    
     return raw,labels
 def btccalc(s,y):
     raw = (DF(BTm[s])[csvYY[y]] / 
            DF(BTm[s])[BASEYEAR])
-    t = get_change_thresholds(rate=.25)
+    t = get_change_thresholds(CHANGECATEGORIES,rate=.25)
     score = threshold_score(raw, t)
-    score[np.isnan(np.asarray(raw))] = 9
+    score[np.isnan(np.asarray(raw))] = CHANGECATEGORIES
     labels = DF(LABELS)['btc'][score]
     return raw,labels
 def btucalc(s,y):
@@ -118,15 +120,15 @@ def svtcalc(s,y):
     raw = DF(SVm[s])[csvYY[y]]
     t = get_linear_thresholds(5,.33,.33)
     score = threshold_score(raw, t)
-    score[np.asarray(raw==0)] = 9
+    score[np.asarray(raw==0)] = 5
     labels = DF(LABELS)['svt'][score]    
     return raw,labels
 def svccalc(s,y):
     raw = (DF(SVm[s])[csvYY[y]] / 
            DF(SVm[s])[BASEYEAR])
-    t = get_change_thresholds(rate=.125)
+    t = get_change_thresholds(CHANGECATEGORIES, rate=.125)
     score = threshold_score(raw, t)
-    score[np.isnan(np.asarray(raw))] = 9
+    score[np.isnan(np.asarray(raw))] = CHANGECATEGORIES
     labels = DF(LABELS)['svc'][score]
     return raw,labels
 def svucalc(s,y):
@@ -140,15 +142,15 @@ def avtcalc(s,y):
     raw = DF(AVm[s])[csvYY[y]]
     t = get_linear_thresholds(5,.25,.25)
     score = threshold_score(raw, t)
-    score[np.asarray(raw==0)] = 9
+    score[np.asarray(raw==0)] = 5
     labels = DF(LABELS)['avt'][score]    
     return raw,labels
 def avccalc(s,y):
     raw = (DF(AVm[s])[csvYY[y]] / 
            DF(AVm[s])[BASEYEAR])
-    t = get_change_thresholds(rate=.125)
+    t = get_change_thresholds(CHANGECATEGORIES, rate=.125)
     score = threshold_score(raw, t)
-    score[np.isnan(np.asarray(raw))] = 9
+    score[np.isnan(np.asarray(raw))] = CHANGECATEGORIES
     labels = DF(LABELS)['avc'][score]
     return raw,labels
 def avucalc(s,y):
@@ -198,8 +200,9 @@ def prep_data():
         for r in range(len(R)):
             for s in range(len(SS)):
                 for y in range(len(YY)):
-                    if i>1 and s>1: s=1 #no ssps for supply indicators
-                    raw,labels = generators[i][r](s,y)
+                    ss = s
+                    if i>1 and s>1: ss=1 #no ssps for supply indicators
+                    raw,labels = generators[i][r](ss,y)
                     outlblr = "%s%s%s%sr" % (II[i],YY[y],SS[s],R[r])
                     outlbll = "%s%s%s%sl" % (II[i],YY[y],SS[s],R[r])
 

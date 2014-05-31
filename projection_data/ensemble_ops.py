@@ -25,6 +25,7 @@ mdls = [
 rcps = ['rcp45','rcp85']
 HISTORICAL = 2005
 BT = 'Bt'
+RO = 'RO'
 
 SFX = '_m-20140402'
 ANNUAL = 'annual/'
@@ -37,7 +38,16 @@ def csv_BT(t, mdl, rcp, run, pfx='', sfx='', **kwargs):
         p = '%s%s_%s_%s' % (pfx, mdl, rcp, run)
     return pd.read_csv("%s_%s%s.csv" % (p, t, sfx))[BT]
 
-def moving_average(maf, syear=1980, eyear=2090, window=21, **kwargs):
+
+def csv_RO(t, mdl, rcp, run, pfx='', sfx='', **kwargs):
+    if t <= HISTORICAL:
+        p = '%s%s_historical_%s' % (pfx, mdl, run)
+    else:
+        p = '%s%s_%s_%s' % (pfx, mdl, rcp, run)
+    return pd.read_csv("%s_%s%s.csv" % (p, t, sfx))[RO]
+
+
+def moving_average(maf, syear=1960, eyear=2090, window=21, **kwargs):
     outdf = pd.DataFrame()
     nyears = eyear-syear+1
     
@@ -122,6 +132,10 @@ def annual_stats():
     all_mdls = iter_models(moving_average, maf=csv_BT, pfx=ANNUAL, sfx=SFX)
     dump_stats(all_mdls, 'bt')
 
+def annual_ro():
+    all_mdls = iter_models(moving_average, maf=csv_RO, pfx=ANNUAL, sfx=SFX, window=30)
+    dump_stats(all_mdls, 'ro')
+
 def annual_var():
     all_mdls = iter_models(interannual_cv, maf=csv_BT, pfx=ANNUAL, sfx=SFX)
     dump_stats(all_mdls, 'iav')
@@ -132,6 +146,7 @@ def seasonal_stats():
 
 
 def main():
+    annual_ro()
     annual_stats()
     annual_var()
     seasonal_stats()
