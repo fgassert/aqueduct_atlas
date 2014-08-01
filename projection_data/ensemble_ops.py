@@ -107,25 +107,33 @@ def mdl_weights(rcp):
 def dump_stats(mdl_list, pfx=''):
     rcpidx = 0
     for s in range(len(rcps)):
-        w = mdl_weights(s)
-        mean = mdl_list[rcpidx]*w[0]
-        for i in range(1,len(w)):
-            mean += mdl_list[i+rcpidx]*w[i]
-        mean.to_csv("%s_mean_%s.csv" % (pfx, rcps[s]))
+        w = np.matrix(mdl_weights(s)*np.ones((len(mdl_list[rcpidx]),1)))
+        mean = np.zeros(mdl_list[rcpidx].shape)
+        for i in range(0,w.shape[1]):
+            n = np.isnan(mdl_list[i+rcpidx])
+            mdl_list[i+rcpidx][n] = 0
+            w[:,i][np.any(n,1)] = 0
+            mean += np.multiply(mdl_list[i+rcpidx],w[:,i])
+        mean = np.divide(mean,np.sum(w,1))
+        meandf = pd.DataFrame(mean, columns=mdl_list[rcpidx].columns)
+        meandf.to_csv("%s_mean_%s.csv" % (pfx, rcps[s]))
         print("%s_mean_%s.csv" % (pfx, rcps[s]))
         
-        var = ((mdl_list[rcpidx]-mean)**2)*w[0]
-        for i in range(1,len(w)):
-            var += ((mdl_list[i+rcpidx]-mean)**2)*w[i]
+        var = np.zeros(mdl_list[rcpidx].shape)
+        for i in range(0,w.shape[1]):
+            v = np.multiply(((mdl_list[i+rcpidx]-mean)**2),w[:,i])
+            var += v
+        var = np.divide(var,np.sum(w,1))
         sd = np.sqrt(var)
-        sd.to_csv("%s_sd_%s.csv" % (pfx, rcps[s]))
+        sddf = pd.DataFrame(sd, columns=mdl_list[rcpidx].columns)
+        sddf.to_csv("%s_sd_%s.csv" % (pfx, rcps[s]))
         print("%s_sd_%s.csv" % (pfx, rcps[s]))
 
-        cv = sd/mean
+        cv = pd.DataFrame(sd/mean, columns=mdl_list[rcpidx].columns)
         cv.to_csv("%s_cv_%s.csv" % (pfx, rcps[s]))
         print("%s_cv_%s.csv" % (pfx, rcps[s]))
 
-        rcpidx += len(w)
+        rcpidx += w.shape[1]
     
 
 def annual_stats():
@@ -146,7 +154,7 @@ def seasonal_stats():
 
 
 def main():
-    annual_ro()
+    #annual_ro()
     annual_stats()
     annual_var()
     seasonal_stats()
