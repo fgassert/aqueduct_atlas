@@ -154,7 +154,7 @@ def seasonal_stats():
 
 
 def main():
-    #annual_ro()
+    annual_ro()
     annual_stats()
     annual_var()
     seasonal_stats()
