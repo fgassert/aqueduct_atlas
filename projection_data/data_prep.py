@@ -7,8 +7,9 @@ import fiona_join
 SHP = "shps/Basins_15006-20130820.shp"
 OUTSHP = "shps/projection_data_20140416.shp"
 DUMPCSV = "prepped.csv"
+INDIR = "csvs"
 
-BA = "Ba-20140303.csv"
+BA = "Summary-20140630.csv"
 BTm = ["bt_mean_rcp45.csv","bt_mean_rcp85.csv"]
 BTcv = ["bt_cv_rcp45.csv","bt_cv_rcp85.csv"]
 SVm = ["sv_mean_rcp45.csv","sv_mean_rcp85.csv"]
@@ -27,7 +28,7 @@ SS = ['24','28','38']
 R = ['t','c','u']
 
 csvYY = ['2020','2030','2040']
-BASEYEAR = '2005'
+BASEYEAR = '2010'
 
 LARGE_NUMBER = 1e16
 NROWS = 15006
@@ -40,7 +41,7 @@ __csvs = {}
 def DF(fname):
     """loads named csv into dataframe"""
     if fname not in __csvs:
-        df = pd.read_csv(fname)
+        df = pd.read_csv(os.path.join(INDIR,fname))
         if BASINID in df.columns:
             df.sort(BASINID,inplace=True)
             df.reset_index()
@@ -219,7 +220,7 @@ def main():
     arr.fillna(NODATA, inplace=True)
     arr.to_csv(DUMPCSV)
     print 'joining'
-    fiona_join.joincsvtoshp(SHP,BASINID,DUMPCSV,BASINID,OUTSHP,True)
+    fiona_join.joincsvtoshp(SHP,BASINID,DUMPCSV,BASINID,OUTSHP)
     print 'complete'
     
 if __name__ == '__main__':

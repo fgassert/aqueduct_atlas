@@ -30,6 +30,7 @@ RO = 'RO'
 SFX = '_m-20140402'
 ANNUAL = 'annual/'
 MONTHLY = 'monthly/'
+OUTDIR = 'csvs/'
 
 def csv_BT(t, mdl, rcp, run, pfx='', sfx='', **kwargs):
     if t <= HISTORICAL:
@@ -116,7 +117,7 @@ def dump_stats(mdl_list, pfx=''):
             mean += np.multiply(mdl_list[i+rcpidx],w[:,i])
         mean = np.divide(mean,np.sum(w,1))
         meandf = pd.DataFrame(mean, columns=mdl_list[rcpidx].columns)
-        meandf.to_csv("%s_mean_%s.csv" % (pfx, rcps[s]))
+        meandf.to_csv(os.path.join(OUTDIR,"%s_mean_%s.csv" % (pfx, rcps[s])))
         print("%s_mean_%s.csv" % (pfx, rcps[s]))
         
         var = np.zeros(mdl_list[rcpidx].shape)
@@ -126,11 +127,11 @@ def dump_stats(mdl_list, pfx=''):
         var = np.divide(var,np.sum(w,1))
         sd = np.sqrt(var)
         sddf = pd.DataFrame(sd, columns=mdl_list[rcpidx].columns)
-        sddf.to_csv("%s_sd_%s.csv" % (pfx, rcps[s]))
+        sddf.to_csv(os.path.join(OUTDIR,"%s_sd_%s.csv" % (pfx, rcps[s])))
         print("%s_sd_%s.csv" % (pfx, rcps[s]))
 
         cv = pd.DataFrame(sd/mean, columns=mdl_list[rcpidx].columns)
-        cv.to_csv("%s_cv_%s.csv" % (pfx, rcps[s]))
+        cv.to_csv(os.path.join(OUTDIR,"%s_cv_%s.csv" % (pfx, rcps[s])))
         print("%s_cv_%s.csv" % (pfx, rcps[s]))
 
         rcpidx += w.shape[1]

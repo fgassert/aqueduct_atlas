@@ -1,6 +1,7 @@
-*.csv
+
 monthly/
 annual/
+annual2/
 shps/
 *#
 *~
