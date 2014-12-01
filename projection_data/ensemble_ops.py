@@ -26,6 +26,7 @@ rcps = ['rcp45','rcp85']
 HISTORICAL = 2005
 BT = 'Bt'
 RO = 'RO'
+CT = 'Ct'
 
 SFX = '_m-20140402'
 ANNUAL = 'annual/'
@@ -90,12 +91,17 @@ def intraannual_cv(yrf, t=1990, sfx='', **kwargs):
 
     return cvs
 
-def iter_models(f, **kwargs):
+def iter_models(f, dump=None, **kwargs):
     li = []
     for s in range(len(rcps)):
         for mdl,rs in mdls[s].iteritems():
             for r in rs:
                 li.append(f(mdl=mdl, rcp=rcps[s], run=r, **kwargs))
+                if dump is not None:
+                    o = os.path.join(OUTDIR,"%s_%s_%s_%s.csv" % 
+                                     (dump,rcps[s],mdl,r))
+                    li[-1].to_csv(o)
+                    print o
     return li
 
 def mdl_weights(rcp):
@@ -120,6 +126,14 @@ def dump_stats(mdl_list, pfx=''):
         meandf.to_csv(os.path.join(OUTDIR,"%s_mean_%s.csv" % (pfx, rcps[s])))
         print("%s_mean_%s.csv" % (pfx, rcps[s]))
         
+        rows = mdl_list[rcpidx].shape[0]
+        diff = np.zeros((rows*w.shape[1],mdl_list[rcpidx].shape[1]))
+        for i in range(0,w.shape[1]):
+            diff[i*rows:(i+1)*rows] = (mdl_list[i+rcpidx]-mean)/mean
+        diffdf = pd.DataFrame(diff, columns=mdl_list[rcpidx].columns)
+        diffdf.to_csv(os.path.join(OUTDIR,"%s_diff_%s.csv" % (pfx, rcps[s])))
+        print("%s_diff_%s.csv" % (pfx, rcps[s]))
+
         var = np.zeros(mdl_list[rcpidx].shape)
         for i in range(0,w.shape[1]):
             v = np.multiply(((mdl_list[i+rcpidx]-mean)**2),w[:,i])
@@ -135,31 +149,34 @@ def dump_stats(mdl_list, pfx=''):
         print("%s_cv_%s.csv" % (pfx, rcps[s]))
 
         rcpidx += w.shape[1]
-    
+
 
 def annual_stats():
-    all_mdls = iter_models(moving_average, maf=csv_BT, pfx=ANNUAL, sfx=SFX)
-    dump_stats(all_mdls, 'bt')
+    hist = iter_models(moving_average, maf=csv_BT, pfx=ANNUAL, sfx=SFX, dump='bt_base', syear=1950, eyear=2010, window=61)
+    all_mdls = iter_models(moving_average, maf=csv_BT, pfx=ANNUAL, sfx=SFX, dump='bt')
+    #dump_stats(all_mdls, 'bt')
 
 def annual_ro():
-    all_mdls = iter_models(moving_average, maf=csv_RO, pfx=ANNUAL, sfx=SFX, window=30)
-    dump_stats(all_mdls, 'ro')
+    hist = iter_models(moving_average, maf=csv_RO, pfx=ANNUAL, sfx=SFX, dump='ro_base', syear=1950, eyear=2010, window=61)
+    all_mdls = iter_models(moving_average, maf=csv_RO, pfx=ANNUAL, sfx=SFX, window=21, dump='ro')
+    #dump_stats(all_mdls, 'ro')
 
 def annual_var():
-    all_mdls = iter_models(interannual_cv, maf=csv_BT, pfx=ANNUAL, sfx=SFX)
-    dump_stats(all_mdls, 'iav')
+    hist = iter_models(interannual_cv, maf=csv_BT, pfx=ANNUAL, sfx=SFX, dump='iav_base', syear=1950, eyear=2010, window=61)
+    all_mdls = iter_models(interannual_cv, maf=csv_BT, pfx=ANNUAL, sfx=SFX, dump='iav')
+    #dump_stats(all_mdls, 'iav')
 
 def seasonal_stats():
-    all_mdls = iter_models(moving_average, maf=intraannual_cv, yrf=csv_BT, pfx=MONTHLY, sfx=SFX)
-    dump_stats(all_mdls, 'sv')
+    hist = iter_models(moving_average, maf=intraannual_cv, yrf=csv_BT, pfx=MONTHLY, sfx=SFX, dump='sv_base', syear=1950, eyear=2010, window=61)
+    all_mdls = iter_models(moving_average, maf=intraannual_cv, yrf=csv_BT, pfx=MONTHLY, sfx=SFX, dump='sv')
+    #dump_stats(all_mdls, 'sv')
 
 
 def main():
-    annual_ro()
-    annual_stats()
-    annual_var()
+    #annual_ro()
+    #annual_stats()
+    #annual_var()
     seasonal_stats()
-
 
 if __name__ == "__main__":
     main()

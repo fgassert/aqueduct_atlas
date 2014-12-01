@@ -3,8 +3,10 @@ monthly/
 annual/
 annual2/
 shps/
+ct-20140630/
 *#
 *~
 *.7z
+.#*
 
 *.py[co]
