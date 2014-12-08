@@ -180,7 +180,9 @@ def weighted_mean(s, j, tname, meanfile=None, sdfile=None, cvfile=None):
             sddf = pd.DataFrame(sd, columns=labels)
             dumpDF(sddf, sdfile.format(s))
         if cvfile is not None:
-            cvdf = pd.DataFrame(sd/mean, columns=labels)
+            #for purposes of uncert measurement increase cv for missing values
+            cv = np.divide(sd/mean,np.sum(w,1))
+            cvdf = pd.DataFrame(cv, columns=labels)
             dumpDF(cvdf, cvfile.format(s))
 
 def get_change_thresholds(n=9,base=2,rate=.25):
@@ -595,6 +597,7 @@ def btu(s):
     score = np.empty((NROWS,len(YRS[1:])),int)
     for i in range(len(YRS[1:])):
         score[:,i] = threshold_score(raw[:,i], t)
+    score[raw==0] = 5 #if there's no variation something is wrong
     labels = readArr(LABELS,'btu',True)[score]
     return raw, labels
 def svt(s):
@@ -607,6 +610,7 @@ def svt(s):
     score = np.empty((NROWS,len(YRS[1:])),int)
     for i in range(len(YRS[1:])):
         score[:,i] = threshold_score(raw[:,i], t)
+    score[np.isnan(raw)] = 5
     score[raw==0] = 5
     labels = readArr(LABELS,'svt',True)[score]
     return raw, labels
@@ -633,6 +637,7 @@ def svu(s):
     score = np.empty((NROWS,len(YRS[1:])),int)
     for i in range(len(YRS[1:])):
         score[:,i] = threshold_score(raw[:,i], t)
+    score[raw==0] = 5 #if there's no variation something is wrong
     labels = readArr(LABELS,'svu',True)[score]
     return raw, labels
 
