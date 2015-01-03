@@ -24,6 +24,7 @@ mdls = [
 
 RCPSSP = ['RCP45_SSP2','RCP85_SSP2','RCP85_SSP3']
 RCP = ['rcp45','rcp85']
+SRES = {0:'B2',1:'B2',2:'A2'}
 YRS = ['2010','2020','2030','2040']
 BASEYR = '2010'
 
@@ -52,6 +53,7 @@ tUt     = 'ut_{}.csv'
 tUtcorr = 'ut_corr_{}.csv'
 tUtch   = 'ut_ch_{}.csv'
 
+tCtm     = 'ct_mean_{}.csv'
 tBam     = 'ba_mean_{}.csv'
 tBacorrm = 'ba_corr_mean_{}.csv'
 tBtm     = 'bt_mean_{}.csv'
@@ -65,6 +67,11 @@ tSvmch   = 'sv_mean_ch_{}.csv'
 tWsm     = 'ws_mean_{}.csv'
 tWscorrm = 'ws_corr_mean_{}.csv'
 tWsmch   = 'ws_mean_ch_{}.csv'
+
+tUtvsBt  = 'ut_vs_bt_{}.csv'
+tPop     = '{}pa{}_5min.csv'
+tPopsum  = 'popsum_{}.csv'
+
 
 UTCSV = "Summary-20140630.csv"
 UTTEMPLATE = 'Ut_{}_{}'
@@ -404,6 +411,12 @@ def WA_ba_mean(i):
     out: ba_mean
     '''
     weighted_mean(RCPSSP[i],i>0,tBa,tBam)
+def WA_ct_mean(i):
+    '''
+    in: ct bymodel
+    out: ct_mean
+    '''
+    weighted_mean(RCPSSP[i],i>0,tCt,tCtm)
 def WA_ba_corr_mean(i):
     '''
     in: ba_corr bymodel
@@ -485,6 +498,38 @@ def Div_ws_mean_ch(s):
     arr = ws/wsbase
     wsch = pd.DataFrame(arr,columns=YRS[1:])
     dumpDF(wsch,tWsmch.format(s))
+
+def Div_ut_vs_bt(i):
+    '''
+    in: ut_ch, bt_ch
+    out: ut_vs_bt
+    '''
+    ut = readArr(tUtch.format(RCPSSP[i]),YRS[1:])
+    bt = readArr(tBtmch.format(RCP[i>0]),YRS[1:])
+    utmag = np.abs(np.log(ut))
+    btmag = np.abs(np.log(bt))
+    arr = utmag/(utmag+btmag)
+    ws = pd.DataFrame(arr,columns=YRS[1:])
+    dumpDF(ws,tUtvsBt.format(RCPSSP[i]))
+def Sum_ws_pop(i):
+    '''
+    in: ws_mean, pop
+    out: pop
+    '''
+    ws = readArr(tWsm.format(RCPSSP[i]),YRS)
+    sumpop = pd.DataFrame()
+    s = np.empty(len(YRS))
+    wss = np.empty(len(YRS))
+    for j in range(len(YRS)):
+        pop = readArr(tPop.format(SRES[i],YRS[j]),['sum'])
+        s[j] = np.nansum(pop)
+        wss[j] = np.nansum(pop[ws[:,j]>0.4])
+    sumpop['sum'] = s 
+    sumpop['ws'] = wss
+    sumpop['pct'] = wss/s
+    dumpDF(sumpop,tPopsum.format(RCPSSP[i]))
+
+
 
 def wst(s):
     '''
@@ -597,7 +642,8 @@ def btu(s):
     score = np.empty((NROWS,len(YRS[1:])),int)
     for i in range(len(YRS[1:])):
         score[:,i] = threshold_score(raw[:,i], t)
-    score[raw==0] = 5 #if there's no variation something is wrong
+    score[raw<1e-6] = 2 #if there's no variation something is wrong
+    score[np.isnan(raw)] = 2 #if there's no variation something is wrong
     labels = readArr(LABELS,'btu',True)[score]
     return raw, labels
 def svt(s):
@@ -637,7 +683,8 @@ def svu(s):
     score = np.empty((NROWS,len(YRS[1:])),int)
     for i in range(len(YRS[1:])):
         score[:,i] = threshold_score(raw[:,i], t)
-    score[raw==0] = 5 #if there's no variation something is wrong
+    score[raw<1e-6] = 2 #if there's no variation something is wrong
+    score[np.isnan(raw)] = 2 #if there's no variation something is wrong
     labels = readArr(LABELS,'svu',True)[score]
     return raw, labels
 
@@ -700,7 +747,7 @@ def process_indicators():
                 #Div_ws(RCPSSP[i],m,r)
                 #Div_ws_corr(RCPSSP[i],m,r)
                 #Div_ws_ch(RCPSSP[i],m,r)
-    '''
+    ''
     for j in range(len(RCP)):
         WA_bt_mean_cv(j)
         WA_bt_corr_mean(j)
@@ -708,12 +755,16 @@ def process_indicators():
         WA_sv_mean_cv(j)
         WA_sv_corr_mean(j)
         Div_sv_mean_ch(RCP[j])
+        '''
     for i in range(len(RCPSSP)):
+        WA_ct_mean(i)
         WA_ba_mean(i)
         WA_ba_corr_mean(i)
         Div_ws_mean(RCPSSP[i])
         Div_ws_corr_mean(RCPSSP[i])
         Div_ws_mean_ch(RCPSSP[i])
+        Div_ut_vs_bt(i)
+        Sum_ws_pop(i)
 
 def main():
     process_indicators()

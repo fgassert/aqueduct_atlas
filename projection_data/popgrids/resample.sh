@@ -1,0 +1,12 @@
+#!/bin/bash
+
+gdalwarp A2pa2000.asc A2pa2000_5min.tif -tr .08333333333 .0833333333
+gdalwarp A2pa2010.asc A2pa2010_5min.tif -tr .08333333333 .0833333333
+gdalwarp A2pa2020.asc A2pa2020_5min.tif -tr .08333333333 .0833333333
+gdalwarp A2pa2030.asc A2pa2030_5min.tif -tr .08333333333 .0833333333
+gdalwarp A2pa2040.asc A2pa2040_5min.tif -tr .08333333333 .0833333333
+gdalwarp B2pa2000.asc B2pa2000_5min.tif -tr .08333333333 .0833333333
+gdalwarp B2pa2010.asc B2pa2010_5min.tif -tr .08333333333 .0833333333
+gdalwarp B2pa2020.asc B2pa2020_5min.tif -tr .08333333333 .0833333333
+gdalwarp B2pa2030.asc B2pa2030_5min.tif -tr .08333333333 .0833333333
+gdalwarp B2pa2040.asc B2pa2040_5min.tif -tr .08333333333 .0833333333
