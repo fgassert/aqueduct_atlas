@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 import flowaccumulator as fa
+import fiona_join as fjoin
 
 mdls = [
     {
@@ -101,6 +102,12 @@ SS = ['24','28','38']
 R = ['t','c','u']
 
 DUMPCSV = "prepped.csv"
+
+INSHP = "shps/Basins_15006-20130820.shp"
+OUTSHP = "shps/out.shp"
+
+EXTRACSV = "figs.csv"
+EXTRASHP = "shps/figs.shp"
 
 __csvs = {}
 def readArr(fname,cols=None,cache=False,in_dir=INDIR,sort_index=BASINID,nrows=NROWS):
@@ -720,7 +727,7 @@ def process_indicators():
     '''
     computes intermediate values for indicators
     '''
-    '''
+    
     for s in RCPSSP:
         F_ut(s)
         Sub_ut_corr(s)
@@ -747,7 +754,7 @@ def process_indicators():
                 #Div_ws(RCPSSP[i],m,r)
                 #Div_ws_corr(RCPSSP[i],m,r)
                 #Div_ws_ch(RCPSSP[i],m,r)
-    ''
+    
     for j in range(len(RCP)):
         WA_bt_mean_cv(j)
         WA_bt_corr_mean(j)
@@ -755,7 +762,7 @@ def process_indicators():
         WA_sv_mean_cv(j)
         WA_sv_corr_mean(j)
         Div_sv_mean_ch(RCP[j])
-        '''
+    
     for i in range(len(RCPSSP)):
         WA_ct_mean(i)
         WA_ba_mean(i)
@@ -766,9 +773,27 @@ def process_indicators():
         Div_ut_vs_bt(i)
         Sum_ws_pop(i)
 
+def gen_shape():
+    c = os.path.join(OUTDIR,DUMPCSV)
+    fjoin.joincsvtoshp(INSHP,BASINID,c,BASINID,OUTSHP)
+
+def gen_extra_shape():
+    outdf = pd.DataFrame()
+    outdf[BASINID] = np.arange(NROWS)+1
+    for s in range(len(RCPSSP)):
+        for y in range(len(YY)):
+            a = readArr(tUtvsBt.format(RCPSSP[s]),YRS[y+1])
+            outdf['UtvsBt{}{}'.format(YY[y],SS[s])] = a
+    dumpDF(outdf, EXTRACSV)
+    c = os.path.join(OUTDIR,EXTRACSV)
+    fjoin.joincsvtoshp(INSHP,BASINID,c,BASINID,EXTRASHP)
+
 def main():
     process_indicators()
     generate_indicators()
+    gen_shape()
+    gen_extra_shape()
+
 
 if __name__ == "__main__":
     main()

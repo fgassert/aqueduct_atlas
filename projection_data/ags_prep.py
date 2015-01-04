@@ -6,7 +6,7 @@ import sys, os
 
 CWD = "C:/Users/francis.gassert/Documents/ArcGIS/GISSync/projections/"
 os.chdir(CWD)
-timestamp = 20141201
+timestamp = 20150103
 
 WORKSPACE = "aqueduct_projections_%s.gdb" % timestamp
 INMXD = "empty.mxd"
@@ -18,7 +18,7 @@ LYRS = [
         ["aqueduct_6.lyr","blue_red_7_1.lyr","gray_mask.lyr"],
        ]
 
-SHP = "projection_data_20141201.shp"
+SHP = "projection_data_20150103.shp"
 LAKES = "inputs.gdb/ne_10m_majorlakes_20121116"
 TMP = "in_memory/tmp"
 OUTSHP = "aqueduct_projections"
