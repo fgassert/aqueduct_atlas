@@ -73,6 +73,13 @@ tUtvsBt  = 'ut_vs_bt_{}.csv'
 tPop     = '{}pa{}_5min.csv'
 tPopsum  = 'popsum_{}.csv'
 
+tIv      = 'iav_{}_{}_{}.csv'
+tIvbase  = 'iav_base_{}_{}_{}.csv'
+tIvch    = 'iav_ch_{}_{}_{}.csv'
+tIvm     = 'iav_mean_{}.csv'
+tIvcv    = 'iav_cv_{}.csv'
+tIvmch   = 'iav_mean_ch_{}.csv'
+
 
 UTCSV = "Summary-20140630.csv"
 UTTEMPLATE = 'Ut_{}_{}'
@@ -475,6 +482,24 @@ def Div_sv_mean_ch(s):
     svch = pd.DataFrame(arr,columns=YRS[1:])
     dumpDF(svch,tSvmch.format(s))
 
+def WA_iv_mean_cv(j):
+    '''
+    in: iv bymodel
+    out: iv_mean, iv_cv
+    '''
+    weighted_mean(RCP[j],j,tIv,tIvm,cvfile=tIvcv)
+def Div_iv_mean_ch(s):
+    '''
+    in: iv_mean
+    out: iv_mean_ch
+    '''
+    ivbase = readArr(tIvm.format(s),[BASEYR],True)
+    iv = readArr(tIvm.format(s),YRS[1:])
+    arr = iv/ivbase
+    ivch = pd.DataFrame(arr,columns=YRS[1:])
+    dumpDF(ivch,tIvmch.format(s))
+
+
 def Div_ws_mean(s):
     '''
     in: ut, ba_mean
@@ -523,14 +548,14 @@ def Sum_ws_pop(i):
     in: ws_mean, pop
     out: pop
     '''
-    ws = readArr(tWsm.format(RCPSSP[i]),YRS)
+    ws = readArr(tWsmch.format(RCPSSP[i]),YRS[1:])
     sumpop = pd.DataFrame()
-    s = np.empty(len(YRS))
-    wss = np.empty(len(YRS))
-    for j in range(len(YRS)):
-        pop = readArr(tPop.format(SRES[i],YRS[j]),['sum'])
+    s = np.empty(len(YRS[1:]))
+    wss = np.empty(len(YRS[1:]))
+    for j in range(len(YRS)-1):
+        pop = readArr(tPop.format(SRES[i],YRS[j+1]),['sum'])
         s[j] = np.nansum(pop)
-        wss[j] = np.nansum(pop[ws[:,j]>0.4])
+        wss[j] = np.nansum(pop[ws[:,j]>2.0**0.25])
     sumpop['sum'] = s 
     sumpop['ws'] = wss
     sumpop['pct'] = wss/s
@@ -727,7 +752,7 @@ def process_indicators():
     '''
     computes intermediate values for indicators
     '''
-    
+    '''
     for s in RCPSSP:
         F_ut(s)
         Sub_ut_corr(s)
@@ -754,7 +779,7 @@ def process_indicators():
                 #Div_ws(RCPSSP[i],m,r)
                 #Div_ws_corr(RCPSSP[i],m,r)
                 #Div_ws_ch(RCPSSP[i],m,r)
-    
+    '''
     for j in range(len(RCP)):
         WA_bt_mean_cv(j)
         WA_bt_corr_mean(j)
@@ -762,6 +787,8 @@ def process_indicators():
         WA_sv_mean_cv(j)
         WA_sv_corr_mean(j)
         Div_sv_mean_ch(RCP[j])
+        WA_iv_mean_cv(j)
+        Div_iv_mean_ch(RCP[j])
     
     for i in range(len(RCPSSP)):
         WA_ct_mean(i)

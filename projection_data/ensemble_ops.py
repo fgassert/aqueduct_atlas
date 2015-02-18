@@ -175,8 +175,8 @@ def seasonal_stats():
 def main():
     #annual_ro()
     #annual_stats()
-    #annual_var()
-    seasonal_stats()
+    annual_var()
+    #seasonal_stats()
 
 if __name__ == "__main__":
     main()
