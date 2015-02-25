@@ -246,9 +246,23 @@ def Sub_ut_corr(s):
     utbase = readArr(tUt.format(s),[BASEYR],True) #as columns
     utgldas = readArr(BASELINE,[bUT],True)
     arr = np.empty((NROWS,len(YRS)),np.double)    
-    diff = utbase-utgldas
+    diff = utgldas-utbase
     arr[:,0] = utgldas.ravel()
     arr[:,1:] = np.fmax(readArr(tUt.format(s),YRS[1:])+diff,0)
+    utcorr = pd.DataFrame(arr,columns=YRS)
+    dumpDF(utcorr,tUtcorr.format(s))
+def Div_ut_corr(s):
+    """
+    bymodel:
+    in: ut, ut_gldas
+    out: ut_corr
+    """
+    utbase = readArr(tUt.format(s),[BASEYR],True) #as columns
+    utgldas = readArr(BASELINE,[bUT],True)
+    arr = np.empty((NROWS,len(YRS)),np.double)    
+    coef = utgldas/utbase
+    arr[:,0] = utgldas.ravel()
+    arr[:,1:] = np.fmax(readArr(tUt.format(s),YRS[1:])*coef,0)
     utcorr = pd.DataFrame(arr,columns=YRS)
     dumpDF(utcorr,tUtcorr.format(s))
 def Div_ut_ch(s):
@@ -289,6 +303,34 @@ def Sub_ro_corr(s,m,r):
     diff = rogldas-robase
     arr[:,0] = rogldas.ravel()
     arr[:,1:] = np.maximum(readArr(fSMR(tRo21yr,s,m,r),YRS[1:])+diff,0)
+    rocorr = pd.DataFrame(arr,columns=YRS)
+    dumpDF(rocorr,fSMR(tRocorr,s,m,r))
+def Div_ct_corr(s,m,r):
+    """
+    bymodel:
+    in: ct_base, ct_21yr, ct_gldas
+    out: ct_corr
+    """
+    ctbase = readArr(fSMR(tCt,s,m,r),[BASEYR],True) #treat as column
+    ctgldas = readArr(BASELINE,[bCT],True)
+    arr = np.empty((NROWS,len(YRS)),np.double)
+    coef = ctgldas/ctbase
+    arr[:,0] = ctgldas.ravel()
+    arr[:,1:] = np.fmax(readArr(fSMR(tCt,s,m,r),YRS[1:])*coef,0)
+    ctcorr = pd.DataFrame(arr,columns=YRS)
+    dumpDF(ctcorr,fSMR(tCtcorr,s,m,r))
+def Div_ro_corr(s,m,r):
+    """
+    bymodel:
+    in: ro_base, ro_21yr, ro_gldas
+    out: ro_corr
+    """
+    robase = readArr(fSMR(tRobase,s,m,r))
+    rogldas = readArr(BASELINE,[bRO],True)
+    arr = np.empty((NROWS,len(YRS)),np.double)
+    coef = rogldas/robase
+    arr[:,0] = rogldas.ravel()
+    arr[:,1:] = np.maximum(readArr(fSMR(tRo21yr,s,m,r),YRS[1:])*coef,0)
     rocorr = pd.DataFrame(arr,columns=YRS)
     dumpDF(rocorr,fSMR(tRocorr,s,m,r))
 
@@ -548,14 +590,31 @@ def Sum_ws_pop(i):
     in: ws_mean, pop
     out: pop
     '''
-    ws = readArr(tWsmch.format(RCPSSP[i]),YRS[1:])
+    ws = readArr(tWscorrm.format(RCPSSP[i]),YRS[1:])
     sumpop = pd.DataFrame()
     s = np.empty(len(YRS[1:]))
     wss = np.empty(len(YRS[1:]))
     for j in range(len(YRS)-1):
         pop = readArr(tPop.format(SRES[i],YRS[j+1]),['sum'])
         s[j] = np.nansum(pop)
-        wss[j] = np.nansum(pop[ws[:,j]>2.0**0.25])
+        wss[j] = np.nansum(pop[ws[:,j]>0.4])
+    sumpop['sum'] = s 
+    sumpop['ws'] = wss
+    sumpop['pct'] = wss/s
+    dumpDF(sumpop,tPopsum.format(RCPSSP[i]))
+def Sum_ws_ut(i):
+    '''
+    in: ws_mean, ut
+    out: pop
+    '''
+    ws = readArr(tWscorrm.format(RCPSSP[i]),YRS[1:])
+    sumpop = pd.DataFrame()
+    s = np.empty(len(YRS[1:]))
+    wss = np.empty(len(YRS[1:]))
+    for j in range(len(YRS)-1):
+        pop = readArr(tUtcorr.format(RCPSSP[i]),YRS[j+1])
+        s[j] = np.nansum(pop)
+        wss[j] = np.nansum(pop[ws[:,j]>0.4])
     sumpop['sum'] = s 
     sumpop['ws'] = wss
     sumpop['pct'] = wss/s
@@ -776,10 +835,10 @@ def process_indicators():
                 Sub_ct_corr(RCPSSP[i],m,r)
                 FA_ba(i,m,r)
                 FA_ba_corr(i,m,r)
-                #Div_ws(RCPSSP[i],m,r)
-                #Div_ws_corr(RCPSSP[i],m,r)
-                #Div_ws_ch(RCPSSP[i],m,r)
-    '''
+                Div_ws(RCPSSP[i],m,r)
+                Div_ws_corr(RCPSSP[i],m,r)
+                Div_ws_ch(RCPSSP[i],m,r)
+
     for j in range(len(RCP)):
         WA_bt_mean_cv(j)
         WA_bt_corr_mean(j)
@@ -789,7 +848,7 @@ def process_indicators():
         Div_sv_mean_ch(RCP[j])
         WA_iv_mean_cv(j)
         Div_iv_mean_ch(RCP[j])
-    
+    '''
     for i in range(len(RCPSSP)):
         WA_ct_mean(i)
         WA_ba_mean(i)
