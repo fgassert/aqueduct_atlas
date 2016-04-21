@@ -72,6 +72,7 @@ tWsmch   = 'ws_mean_ch_{}.csv'
 tUtvsBt  = 'ut_vs_bt_{}.csv'
 tPop     = '{}pa{}_5min.csv'
 tPopsum  = 'popsum_{}.csv'
+tUtsum  = 'Utsum_{}.csv'
 
 tIv      = 'iav_{}_{}_{}.csv'
 tIvbase  = 'iav_base_{}_{}_{}.csv'
@@ -90,6 +91,7 @@ bCT = 'CT'
 bRO = 'RO'
 bUT = 'UT'
 bSV = 'SV'
+bWS = 'BWS'
 
 BASINCSV = 'basins_15006.csv'
 AREACSV = "basin_area_20140121.csv"
@@ -605,20 +607,24 @@ def Sum_ws_pop(i):
 def Sum_ws_ut(i):
     '''
     in: ws_mean, ut
-    out: pop
+    out: ut
     '''
-    ws = readArr(tWscorrm.format(RCPSSP[i]),YRS[1:])
+    ws = readArr(tWscorrm.format(RCPSSP[i]),YRS)
     sumpop = pd.DataFrame()
-    s = np.empty(len(YRS[1:]))
-    wss = np.empty(len(YRS[1:]))
-    for j in range(len(YRS)-1):
-        pop = readArr(tUtcorr.format(RCPSSP[i]),YRS[j+1])
-        s[j] = np.nansum(pop)
-        wss[j] = np.nansum(pop[ws[:,j]>0.4])
+    s = np.empty(len(YRS))
+    wss = np.empty(len(YRS))
+#    utgldas = readArr(BASELINE,[bUT])
+#    wsgldas = readArr(BASELINE,[bWS])
+#    s[0] = np.nansum(utgldas)
+#    wss[0] = np.nansum(utgldas[wsgldas[:,j]>0.4])
+    for j in range(0,len(YRS)):
+        ut = readArr(tUtcorr.format(RCPSSP[i]),YRS[j])
+        s[j] = np.nansum(ut)
+        wss[j] = np.nansum(ut[ws[:,j]>0.4])
     sumpop['sum'] = s 
     sumpop['ws'] = wss
     sumpop['pct'] = wss/s
-    dumpDF(sumpop,tPopsum.format(RCPSSP[i]))
+    dumpDF(sumpop,tUtsum.format(RCPSSP[i]))
 
 
 
@@ -858,6 +864,7 @@ def process_indicators():
         Div_ws_mean_ch(RCPSSP[i])
         Div_ut_vs_bt(i)
         Sum_ws_pop(i)
+        Sum_ws_ut(i)
 
 def gen_shape():
     c = os.path.join(OUTDIR,DUMPCSV)

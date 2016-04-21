@@ -1,0 +1,26 @@
+\documentclass{article}
+\pagestyle{empty}
+\usepackage{mathtools}
+\usepackage{millennial}
+\begin{document}
+
+
+$$ P_{i,t} = \frac{AEI_{i,t}}{A_{ag,i}} $$
+$$ \log \left( \frac{P_{i,t}}{1-P_{i,t}} \right) = \beta_0 + \beta_{PW}PW + \beta_1X_{1,i,t} + \beta_2X_{2,i,t} + \\
+\dots + \beta_kX_{k,i,t} + b_{0,i} + b_{PW,i}PW + \epsilon_{i,t} $$
+$$ \hat{P}_{i,t} $$
+$$ A_{irr} = \hat{P}_{i,t}A_{ag,i}\frac{AAI_i}{AEI_i}$$
+$$ \Delta A_{irr,i} = A_{irr,i,targetyear} - A_{irr,i,baselineyear} $$
+$$ AAE_{l,i} = AEI_{l,i} - AAI_{l,i} $$
+$$ ICU = PET - AET $$
+$$ U_{ag} = IWW = \frac{IWR}{WRR} $$
+
+\begin{align*}
+IWR & = ICU×A_{irr} + 0.2×A_{rice} \\ 
+& = C_{ag} + 0.2×A_{rice}
+\end{align*}
+
+$$ U_{ind,i,t} = \beta_0 + \beta_{YEAR}YEAR + \beta_1X_{1,i,t} + \beta_2X_{2,i,t} + \\
+\dots + \beta_kX_{k,i,t} + b_{0,i} + b_{YEAR,i}YEAR + \epsilon_{i,t} $$
+
+\end{document}

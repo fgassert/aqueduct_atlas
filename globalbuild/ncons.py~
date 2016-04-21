@@ -1,0 +1,46 @@
+"""
+"""
+
+import numpy as np
+import sys
+import matplotlib.mlab as mlab
+import flowaccumulator.accumulate as accumulate
+from constants import *
+
+def f0(i, r, *args):
+    return r[i]
+
+def f(i, idx, values, r, uc, *args):
+    return np.sum(np.maximum(values[idx]-uc[idx],0)) + f0[i]
+
+def main(basin_csv, r_csv, uc_csv, ba_csv):
+    basin_arr = mlab.csv2rec(basin_csv)
+
+    uc_arr = mlab.csv2rec(uc_csv)
+    r_arr = mlab.csv2rec(r_arr)
+
+    if any(basin_arr["basinid"]!=r_arr["basinid"] or r_arr["basinid"]!=uc_arr["basinid"]):
+        raise Exception("ID columns do not match")
+
+    ids = basin_arr["basinid"]
+    d_ids = basin_arr["dwnbasin"]
+ 
+    uc = uc_arr["ct"]
+
+    n = len(r_arr["basinid"])-1
+    yrs = len(r_arr)
+    
+    ba = np.ones(n, yrs+1) * NULL_VALUE
+    ba[:,0] = ids
+    
+    for i in range(1,yrs):
+        yr = r_arr.dtype.names[i]
+        r = r_arr[yr]
+        ba[:,i] = accumulate(ids, d_ids, f0, f, r, uc)
+        
+    outrec = np.rec.fromarrays(ba.transpose(),names=r.dtype.names)
+    
+    mlab.rec2csv(outrec, ba_csv)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

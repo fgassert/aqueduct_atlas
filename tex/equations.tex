@@ -1,0 +1,55 @@
+\documentclass{article}
+\pagestyle{empty}
+\usepackage{mathtools}
+\usepackage{millennial}
+\begin{document}
+
+
+
+\[ P_{i,t} = \frac{AEI_{i,t}}{A_{ag,i}} \]
+
+\[ 
+\log \left( \frac{P_{i,t}}{1-P_{i,t}} \right) = \beta_0 + \beta_{PW}PW + \beta_1X_{1,i,t} + \beta_2X_{2,i,t} + \\
+\dots + \beta_kX_{k,i,t} + b_{0,i} + b_{PW,i}PW + \epsilon_{i,t}
+\]
+
+\[ \hat{P}_{i,t} \]
+\[ A_{irr} = \hat{P}_{i,t}A_{ag,i}\frac{AAI_i}{AEI_i} \]
+\[ \Delta A_{irr,i} = A_{irr,i,targetyear} - A_{irr,i,baselineyear} \]
+\[ AAE_{l,i} = AEI_{l,i} - AAI_{l,i} \]
+\[ ICU = PET - AET \]
+\[ U_{ag} = IWW = \frac{IWR}{WRR} \]
+
+\begin{align*}
+IWR & = ICU\times A_{irr} + 0.2\times A_{rice} \\ 
+& = C_{ag} + 0.2\times A_{rice}
+\end{align*}
+
+\[
+U_{ind,i,t} = \beta_0 + \beta_{YEAR}YEAR + \beta_1X_{1,i,t} + \beta_2X_{2,i,t} + \\ \dots + \beta_kX_{k,i,t} + b_{0,i} + b_{YEAR,i}YEAR + \epsilon_{i,t} 
+\]
+
+\[
+b_{YEAR,i} = \left\{
+\begin{array}{l l}
+b_{YEAR,80} & \text{if } b_{YEAR,i} \geq b_{YEAR,80} \\
+b_{YEAR,i} & \text{if } |b_{YEAR,i}| > b_{YEAR,80} \\
+-b_{YEAR,80} & \text{if } b_{YEAR,i} \leq -b_{YEAR,80} 
+\end{array} \right.
+\]
+
+\[ U_{ind,p} = U_{ind,i} \frac{GDP_p}{\sum_{p\in i}GDP_p} \]
+\[ \bar{x} = \frac{1}{n}\sum_i^n \left( \frac{1}{m_i} \sum_j^{m_i} x_{i,j} \right) \]
+
+\[ cv = \frac{1}{\bar{x}}\sqrt{\frac{\sum 1/m_i(x_{i,j}-\bar{x})^2}{\sum 1/m_i}} \]
+
+\[ WS_t = \frac{Ut_t}{Ba_{[t-10:t+10]}} \]
+\[ E_{m,b} = \frac{X_{m,b}-X_{o,b}}{x_{o,b}} \]
+\[ K = \frac{\sum_b^n K_{mean,b} + K_{sd,b}}{2n} \]
+
+\[ R_{corr,t} = R_{prj,t} + R_{base} - R_{prj,[1950-2010]} \]
+\[ Ct_{corr,t} = Ct_{prj,t} + Ct_{base} - Ct_{prj,[2010]} \]
+\[ Ut_{corr,t} = Ut_{prj,t} + Ut_{base} - Ut_{prj,[2010]} \]
+\[ SV_{corr,t} = SV_{prj,t}\frac{SV_{base}}{SV_{prj,[1950-2010]}} \]
+
+\end{document}

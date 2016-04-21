@@ -1,0 +1,16 @@
+
+
+import numpy as np
+import arcpy as ap
+import matplotlib.mlab as mlab
+import rtree
+import fiona
+import shapely
+import csv
+
+def fi_shape(points_shp, poly_shp):
+    points = fiona.open(points_shp, 'r')
+    polys = fiona.open(poly_shp,'r')
+    shp_polys = [shapely.shape(poly['geometry']) for poly in ploys]
+    r = filter(p.contains,pts)
+    

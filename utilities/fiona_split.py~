@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+import fiona
+import os
+
+folder = 'tmp'
+infile = 
+
+
+def fiona_split(infile,f):
+    with fiona.drivers():
+        with fiona.open(infile,'r','ESRI Shapefile') as src:
+            
+            o = os.path.basename(o[:-4])+'.shp'
+            with fiona.open(o,'w',
+                            'ESRI Shapefile',
+                            vfs='zip://' % o,
+                            crs=src.crs,
+                            schema=schema) as dst:
+                dst.writerecord(feature)
+                
